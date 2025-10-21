@@ -60,24 +60,47 @@
                 }
             }
             
-            // --- Get All Parameters from your NEW URL ---
-            const gender = params.get('q1_gender');
+            // --- Get raw parameters from URL ---
+            const genderParam = params.get('q1_gender');
             const age = params.get('q2_age');
             const weight = parseFloat(params.get('q3_weight'));
             const height = parseFloat(params.get('q4_height'));
-            const chronic = params.get('q5_chronic');
-            const blood = params.get('q6_blood'); // This is new, but has no logic in the PDF
-            const weightChange = params.get('q7_weightChange');
-            const exercise = params.get('q8_exercise');
-            const sleep = params.get('q9_sleep');
-            const alcohol = params.get('q10_alcohol');
-            const smoking = params.get('q11_smoking');
-            const medication = params.get('q12_medication');
-            const food = params.get('q13_food');
-            const drinks = params.get('q14_drinks');
-            const stress = params.get('q15_stress');
-            const symptoms = params.get('q16_symptoms');
+            const chronicParam = params.get('q5_chronic');
+            const bloodParam = params.get('q6_blood');
+            const weightChangeParam = params.get('q7_weightChange');
+            const exerciseParam = params.get('q8_exercise');
+            const sleepParam = params.get('q9_sleep');
+            const alcoholParam = params.get('q10_alcohol');
+            const smokingParam = params.get('q11_smoking');
+            const medicationParam = params.get('q12_medication');
+            const foodParam = params.get('q13_food');
+            const drinksParam = params.get('q14_drinks');
+            const stressParam = params.get('q15_stress');
+            const symptomsParam = params.get('q16_symptoms');
 
+            // --- Normalize Arabic parameters to English keywords for logic ---
+            const gender = (genderParam === 'ذكر') ? 'male' : ((genderParam === 'انثى') ? 'female' : genderParam);
+            const chronic = chronicParam ? chronicParam.replace('ارتفاع ضغط الدم الشرياني', 'hypertension').replace('مرض السكري من النوع 2', 'diabetes') : null;
+            const weightChange = (weightChangeParam === 'نعم') ? 'yes' : ((weightChangeParam === 'لا') ? 'no' : weightChangeParam);
+            const exercise = (exerciseParam === 'نعم') ? 'yes' : ((exerciseParam === 'لا') ? 'no' : exerciseParam);
+            const sleep = (sleepParam === 'نعم') ? 'yes' : ((sleepParam === 'لا') ? 'no' : sleepParam);
+            const alcohol = (alcoholParam === 'نعم') ? 'yes' : ((alcoholParam === 'لا') ? 'no' : alcoholParam);
+            const smoking = (smokingParam === 'نعم') ? 'yes' : ((smokingParam === 'لا') ? 'no' : smokingParam);
+            const medication = (medicationParam === 'نعم') ? 'yes' : ((medicationParam === 'لا') ? 'no' : medicationParam);
+            const food = (foodParam === 'نعم') ? 'yes' : ((foodParam === 'لا') ? 'no' : foodParam);
+            const drinks = (drinksParam === 'نعم') ? 'yes' : ((drinksParam === 'لا') ? 'no' : drinksParam);
+            const stress = (stressParam === 'نعم') ? 'yes' : ((stressParam === 'لا') ? 'no' : stressParam);
+
+            let symptoms = symptomsParam;
+            if (symptoms) {
+                symptoms = symptoms.replace(/انخفاض في مستويات الطاقة/g, 'low_energy')
+                                   .replace(/الشعور بالتعب المزمن/g, 'chronic_fatigue')
+                                   .replace(/خمول أثناء النهار/g, 'daytime_lethargy')
+                                   .replace(/صعوبة في النوم/g, 'difficulty_sleeping')
+                                   .replace(/ألم أو انتفاخ في البطن/g, 'abdominal_pain')
+                                   .replace(/اصفرار الجلد والعينين/g, 'jaundice')
+                                   .replace(/البول الداكن/g, 'dark_urine');
+            }
 
             // --- Logic for displaying results based on PDF ---
 
@@ -209,7 +232,7 @@
                     'jaundice': 'اصفرار الجلد والعينين',
                     'dark_urine': 'البول الداكن'
                 };
-                const selectedSymptoms = symptoms.split(',').map(s => symptomMap[s] || s).join('، ');
+                const selectedSymptoms = symptoms.split(',').map(s => symptomMap[s.trim()] || s.trim()).join('، ');
                 const symptomsText = `لقد ذكرت أنك تعاني من: ${selectedSymptoms}. وفقًا للدراسات، غالبًا ما يتم الإبلاغ عن هذه الأعراض من قبل مرضى الكبد الدهني غير الكحولي ولكنها تقل بشكل ملحوظ مع تحسن نمط الحياة في المرضى الذين يعانون من تغيرات دهنية في الكبد.`;
                 createResultCard('الأعراض', symptomsText);
             }
